@@ -1,97 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "./Card";
 import { BtnScrollTop } from "./BtnScrollTop";
 import { Navbar } from "./Navbar";
-import { useEffect } from "react";
 
 export function FormType() {
-  const [card, setCard] = useState([]);
+  const [cards, setCards] = useState([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [tooData, setTooData] = useState(false);
+  const [noData, setNoData] = useState(false);
+  const [data, setData] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  ///////////////////////////////////////////////////////
+  const handleFetch = async () => {
+    const searchedWord = input.trim().toLowerCase();
 
-  async function handleFetch() {
+    if (searchedWord === "") {
+      setTooData(true);
+      setNoData(false);
+      setData(false);
+      return;
+    }
+
     try {
-      const searchedWord = input.trim().toLowerCase() ;
-      let filteredCards = [];
+      const response = await fetch(
+        "https://db.ygoprodeck.com/api/v7/cardinfo.php"
+      );
+      const responseJson = await response.json();
+      const dataJson = responseJson.data;
 
-      if (searchedWord === "") {
-        console.log(
-          "Troppi dati da fetchare. Per favore digita nella barra di ricerca"
-        );
-        alert(
-          "Troppi dati da fetchare. Per favore digita nella barra di ricerca"
-        );
+      const filteredCards = dataJson.filter((card) => {
+        const cardName = card.name.toLowerCase();
+        const cardDesc = card.desc.toLowerCase();
+        const cardArch = card.archetype ? card.archetype.toLowerCase() : "";
 
-        setCard([]);
+        return (
+          cardName.includes(searchedWord) ||
+          cardDesc.includes(searchedWord) ||
+          cardArch.includes(searchedWord)
+        );
+      });
+
+      if (filteredCards.length > 0) {
+        setCards(filteredCards);
+        setData(true);
+        setNoData(false);
+        setTooData(false);
       } else {
-        setLoading(true);
-        //fetch data
-        const response = await fetch(
-          "https://db.ygoprodeck.com/api/v7/cardinfo.php"
-        );
-        const responseJson = await response.json();
-        const dataJson = await responseJson.data;
-
-        setLoading(false);
-
-        filteredCards = dataJson.filter((card) => {
-          const cardName = card.name.toLowerCase();
-          const cardDesc = card.desc.toLowerCase();
-
-          const cardArch = card.archetype ? card.archetype.toLowerCase() : "";
-
-          if (loading) {
-            return <span style={{ width: "500px" }}>Loading...</span>;
-          }
-
-          if (
-            searchedWord === "" ||
-            !cardName.includes(searchedWord) &&
-            !cardDesc.includes(searchedWord) &&
-            !cardArch.includes(searchedWord)
-          ) {
-            alert("Nessun risultato trovato");
-            console.log("Nessun risultato trovato");
-          } else {
-            return (
-              searchedWord !== "" ||
-              cardName.includes(searchedWord) ||
-              cardDesc.includes(searchedWord) ||
-              cardArch.includes(searchedWord)
-            );
-          }
-        });
-        setCard(filteredCards);
-        console.log(filteredCards);
+        setCards([]);
+        setNoData(true);
+        setData(false);
+        setTooData(false);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching data:", error);
     }
-  }
+  };
 
-  /////////////////////////////////////////////
+  const handleClear = () => {
+    setCards([]);
+    setInput("");
+    setTooData(false);
+    setNoData(false);
+    setData(false);
+  };
 
-  function handleClear() {
-    setCard([]);
-  }
-
-  function handleKeyDown(event) {
+  const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       handleFetch();
     }
-  }
-  //per bloccare la barra allo scroll
-  const [isScrolled, setIsScrolled] = useState(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -110,6 +91,7 @@ export function FormType() {
           type="text"
           id="input-search"
           placeholder="Search"
+          value={input}
           autoFocus
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -121,8 +103,20 @@ export function FormType() {
           fetch
         </button>
       </div>
-      <Card card={card} />
       <BtnScrollTop />
+      {tooData && (
+        <div>
+          <h3 className="toodata-message">Troppi dati da fetchare</h3>
+          <p>Per favore ridigita nella barra di ricerca</p>
+        </div>
+      )}
+      {noData && (
+        <div>
+          <h3 className="nodata-message">Nessun risultato trovato</h3>
+          <p>Per favore ridigita nella barra di ricerca</p>
+        </div>
+      )}
+      {data && <Card cards={cards} />}
     </div>
   );
 }

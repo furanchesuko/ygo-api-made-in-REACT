@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 * {
   box-sizing: border-box;
   margin: 0px;
@@ -7,7 +11,7 @@
 
 :root {
   background-color: rgb(173, 210, 255);
-  background-color: #B5895A;
+  background-color: #b5895a;
 }
 
 .container-all {
@@ -22,13 +26,17 @@
 
 .navbar {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px;
+  padding-top: 10px;
+  padding-left: 30px;
+  padding-right: 30px;
   /* background-color: rgb(40, 60, 85); */
   background-color: #733526;
   width: 100%;
+  max-height: 75px;
 }
 
 #logo-nav {
@@ -38,6 +46,7 @@
 }
 
 #title {
+  max-height: 70px;
   font-size: 70%;
   width: 30%;
   color: white;
@@ -59,7 +68,7 @@
   justify-content: center;
   align-items: center;
   transition: top 300ms;
-  padding: 5px;
+  padding: 10px;
   /*   background-color: rgb(40, 60, 85); */
   background-color: #733526;
   border-bottom-left-radius: 20px;
@@ -157,10 +166,18 @@
   background-color: #555;
 }
 
-.alert-data {
-  position: absolute;
-  width: 500px;
-  color: red;
+.nodata-message {
+  padding: 20px;
+  color: rgb(130, 0, 0);
+  text-align: center;
+  transition-delay: 1500ms;
+}
+
+.toodata-message {
+  padding: 20px;
+  color: rgb(171, 66, 0);
+  text-align: center;
+  transition-delay: 1500ms;
 }
 
 /* media for 4k */
